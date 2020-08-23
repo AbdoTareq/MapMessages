@@ -12,7 +12,10 @@ import com.absolute.template.data.models.FeedContainer
 import com.absolute.template.data.models.Message
 import com.absolute.template.data.repository.FeedInterface
 import com.absolute.template.data.repository.Repository
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import timber.log.Timber
 import java.io.IOException
 
@@ -26,6 +29,8 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
 
     private val repository = Repository()
     private val applicationCon = application
+
+    private lateinit var mMap: GoogleMap
 
     private val _status = MutableLiveData<ApiStatus>()
     val statusType: LiveData<ApiStatus>
@@ -88,6 +93,39 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
             }
         } else
             return ArrayList()
+    }
+
+    fun setMarker(map: GoogleMap) {
+        mMap = map
+
+        for (city in getCityName()){
+            val destination = getLocations(city)
+
+            for (i in destination) {
+                mMap.addMarker(MarkerOptions().position(i))
+                mMap.addMarker(
+                    MarkerOptions().position(i)
+                        // this for styling the marker
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                )
+            }
+        }
+    }
+
+
+    private fun getCityName(): List<String> {
+        return listOf(
+            "Damascus",
+            "Mogadishu",
+            "Ibiza",
+            "Cairo",
+            "Tahrir",
+            "Nairobi",
+            "Kathmandu",
+            "Bernabau",
+            "Athens",
+            "Istanbul"
+        )
     }
 
     fun getMessageFromString(st: String): Message {

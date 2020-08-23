@@ -1,6 +1,8 @@
 package com.absolute.template.viewmodel
 
 import android.app.Application
+import android.location.Address
+import android.location.Geocoder
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -10,7 +12,10 @@ import com.absolute.template.data.models.FeedContainer
 import com.absolute.template.data.models.Message
 import com.absolute.template.data.repository.FeedInterface
 import com.absolute.template.data.repository.Repository
+import com.google.android.gms.maps.model.LatLng
 import timber.log.Timber
+import java.io.IOException
+
 
 enum class ApiStatus { LOADING, ERROR, DONE }
 
@@ -26,29 +31,29 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
     val statusType: LiveData<ApiStatus>
         get() = _status
 
-    private val _messages = MutableLiveData<ArrayList<Message>>()
-    val messages: LiveData<ArrayList<Message>>
+    private val _messages = MutableLiveData<List<Message>>()
+    val messages: LiveData<List<Message>>
         get() = _messages
 
     init {
         _status.value = ApiStatus.LOADING
         repository.getFeed(object : FeedInterface {
             override fun onSuccess(feedContainer: FeedContainer) {
-                _messages.value = ArrayList()
+                val temp = ArrayList<Message>()
                 _status.value = ApiStatus.DONE
-                for (m in feedContainer.feed.entry){
-                    _messages.value!!.add(getMessageFromString(m.content.t!!))
+                for (m in feedContainer.feed.entry) {
+                    temp.add(getMessageFromString(m.content.t!!))
                 }
-                for (i in _messages.value!!)
-                Timber.e("${i}")
+                _messages.value = temp
+                Timber.e("${_messages.value!!}")
             }
 
             override fun onFail(responseCode: String) {
                 _status.value = ApiStatus.ERROR
+                _messages.value = ArrayList()
                 Toast.makeText(application, getErrorMess(responseCode), Toast.LENGTH_LONG).show()
             }
         })
-
 
     }
 
@@ -61,12 +66,35 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
         repository.cancelJob()
     }
 
+    private fun getLocations(location: String): ArrayList<LatLng> {
+        if (Geocoder.isPresent()) {
+            try {
+                val gc = Geocoder(applicationCon)
+                val addresses: List<Address> =
+                    gc.getFromLocationName(location, 5) // get the found Address Objects
+                // A list to save the coordinates if they are available
+                val ll: ArrayList<LatLng> =
+                    ArrayList<LatLng>(addresses.size)
+                for (a in addresses) {
+                    if (a.hasLatitude() && a.hasLongitude()) {
+                        ll.add(LatLng(a.latitude, a.longitude))
+                    }
+                }
+                return ll
+            } catch (e: IOException) {
+                // handle the exception
+                Timber.e("$e")
+                return ArrayList()
+            }
+        } else
+            return ArrayList()
+    }
+
     fun getMessageFromString(st: String): Message {
-        val m = st.split(", ", "messageid", "message", "sentiment")
-        val message = Message(
-            messageid = m[1], message = m[3], sentiment = m[5]
+        val m = st.split(", ", "messageid", "message", "sentiment", ": ")
+        return Message(
+            messageid = m[2], message = m[5], sentiment = m[8]
         )
-        return message
     }
 
 }

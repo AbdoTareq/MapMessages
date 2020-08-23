@@ -2,6 +2,7 @@ package com.absolute.template.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.absolute.template.R
 import com.absolute.template.databinding.ActivityMainBinding
@@ -27,6 +28,10 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel = viewModel
 
         binding.lifecycleOwner = this
+
+        val adapter = MessageAdapter()
+
+        binding.recyclerView.adapter = adapter
 
 
     }

@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Al Fares Tracking</string>
+    <string name="app_name">Message Task</string>
+    <string name="forbidden_mess">forbidden</string>
+    <string name="server_offline_try">server offline try again later</string>
 </resources>

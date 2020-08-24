@@ -97,11 +97,10 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
     fun setMarker(map: GoogleMap, list: List<Message>) {
         mMap = map
 
-        for ((index,city) in getCityName().withIndex()){
-            val destination = getLocations(city)
+        for ((index,city) in list.withIndex()){
+            val destination = getLocations(city.message)
             for ( i in destination) {
                 mMap.addMarker(MarkerOptions().position(i))
-                Timber.e("abdo ${index}")
                 when (list[index].sentiment) {
                     "Positive" -> mMap.addMarker(
                         MarkerOptions().position(i)

@@ -50,7 +50,6 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
                     temp.add(getMessageFromString(m.content.t!!))
                 }
                 _messages.value = temp
-                Timber.e("${_messages.value!!}")
             }
 
             override fun onFail(responseCode: String) {
@@ -79,7 +78,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
                     gc.getFromLocationName(location, 5) // get the found Address Objects
                 // A list to save the coordinates if they are available
                 val ll: ArrayList<LatLng> =
-                    ArrayList<LatLng>(addresses.size)
+                    ArrayList(addresses.size)
                 for (a in addresses) {
                     if (a.hasLatitude() && a.hasLongitude()) {
                         ll.add(LatLng(a.latitude, a.longitude))
@@ -88,26 +87,38 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
                 return ll
             } catch (e: IOException) {
                 // handle the exception
-                Timber.e("$e")
+                Timber.e("ahmed $e")
                 return ArrayList()
             }
         } else
             return ArrayList()
     }
 
-    fun setMarker(map: GoogleMap) {
+    fun setMarker(map: GoogleMap, list: List<Message>) {
         mMap = map
 
-        for (city in getCityName()){
+        for ((index,city) in getCityName().withIndex()){
             val destination = getLocations(city)
-
-            for (i in destination) {
+            for ( i in destination) {
                 mMap.addMarker(MarkerOptions().position(i))
-                mMap.addMarker(
-                    MarkerOptions().position(i)
-                        // this for styling the marker
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                )
+                Timber.e("abdo ${index}")
+                when (list[index].sentiment) {
+                    "Positive" -> mMap.addMarker(
+                        MarkerOptions().position(i)
+                            // this for styling the marker
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    )
+                    "Negative" -> mMap.addMarker(
+                        MarkerOptions().position(i)
+                            // this for styling the marker
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                    )
+                    "Neutral" -> mMap.addMarker(
+                        MarkerOptions().position(i)
+                            // this for styling the marker
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    )
+                }
             }
         }
     }
